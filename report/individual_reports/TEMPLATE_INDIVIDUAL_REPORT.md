@@ -1,8 +1,8 @@
 # Individual Report: Lab 3 - Healthcare ReAct Agent
 
-- **Student Name**: Fill before submission
-- **Student ID**: Fill before submission
-- **GitHub Username**: Fill before submission
+- **Student Name**: Lương Trung Đức
+- **Student ID**: 2A202600704
+- **GitHub Username**: duck203
 - **Commit Evidence**: Add this member's commit hash or GitHub commit URL
 - **Date**: 2026-06-01
 
