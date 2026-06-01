@@ -33,19 +33,19 @@ class ScriptedProvider(LLMProvider):
 CASES = [
     {
         "name": "Emergency red flags",
-        "question": "A 62-year-old patient in Hanoi has chest pain and shortness of breath for 2 hours. What level of care is appropriate?",
+        "question": "A 62-year-old patient in Hà Nội has chest pain and shortness of breath for 2 hours. What Vinmec care level is appropriate?",
         "chatbot_response": "It may be anxiety or indigestion. Consider resting and monitoring symptoms.",
         "agent_v1_responses": [
             'Thought: Assess red flags first.\nAction: assess_symptom_urgency(symptoms="chest pain and shortness of breath", age=62, duration_hours=2)',
-            'Thought: Emergency red flags are present.\nAction: recommend_care_service(urgency="emergency", location="Hanoi")',
-            "Final Answer: Emergency department is appropriate. Call local emergency services or go now. This is not a diagnosis.",
+            'Thought: Emergency red flags are present.\nAction: recommend_care_service(urgency="emergency", location="Hà Nội")',
+            "Final Answer: Vinmec Times City emergency department is appropriate. Call local emergency services or go now. This is not a diagnosis.",
         ],
         "agent_v2_responses": [
             'Thought: Assess red flags first.\nAction: assess_symptom_urgency(symptoms="chest pain and shortness of breath", age=62, duration_hours=2)',
-            'Thought: Emergency red flags are present.\nAction: recommend_care_service(urgency="emergency", location="Hanoi")',
-            "Final Answer: Emergency department is appropriate. Call local emergency services or go now. This is not a diagnosis.",
+            'Thought: Emergency red flags are present.\nAction: recommend_care_service(urgency="emergency", location="Hà Nội")',
+            "Final Answer: Vinmec Times City emergency department is appropriate. Call local emergency services or go now. This is not a diagnosis.",
         ],
-        "expected_terms": ["Emergency", "not a diagnosis"],
+        "expected_terms": ["Vinmec", "Emergency", "not a diagnosis"],
     },
     {
         "name": "Routine symptoms",
@@ -54,14 +54,14 @@ CASES = [
         "agent_v1_responses": [
             'Thought: Assess urgency.\nAction: assess_symptom_urgency(symptoms="mild cough, no breathing difficulty", age=30, duration_hours=24)',
             'Thought: Routine care is enough if symptoms persist.\nAction: appointment_preparation(service_type="routine")',
-            "Final Answer: Routine care is reasonable if symptoms persist. Prepare medication list, allergy list, symptom timeline, and questions. This is not a diagnosis.",
+            "Final Answer: Routine Vinmec care is reasonable if symptoms persist. Prepare medication list, allergy list, symptom timeline, and questions. This is not a diagnosis.",
         ],
         "agent_v2_responses": [
             'Thought: Assess urgency.\nAction: assess_symptom_urgency(symptoms="mild cough, no breathing difficulty", age=30, duration_hours=24)',
             'Thought: Routine care is enough if symptoms persist.\nAction: appointment_preparation(service_type="routine")',
-            "Final Answer: Routine care is reasonable if symptoms persist. Prepare medication list, allergy list, symptom timeline, and questions. This is not a diagnosis.",
+            "Final Answer: Routine Vinmec care is reasonable if symptoms persist. Prepare medication list, allergy list, symptom timeline, and questions. This is not a diagnosis.",
         ],
-        "expected_terms": ["Routine", "not a diagnosis"],
+        "expected_terms": ["Routine", "Vinmec", "not a diagnosis"],
     },
     {
         "name": "Tool recovery",
@@ -73,9 +73,9 @@ CASES = [
         "agent_v2_responses": [
             'Thought: I will use a made-up tool.\nAction: diagnose_patient(symptoms="urgent care cost")',
             'Thought: The previous tool was invalid, so use the cost estimator.\nAction: estimate_visit_cost(service_type="urgent", insurance_status="insured")',
-            "Final Answer: Estimated insured urgent care cost is 180,000 VND. This is a planning estimate, not a hospital quote.",
+            "Final Answer: Estimated insured Vinmec-style urgent care cost is 180,000 VND. This is a planning estimate, not an official Vinmec service fee.",
         ],
-        "expected_terms": ["180,000 VND", "estimate"],
+        "expected_terms": ["180,000 VND", "Vinmec", "estimate"],
     },
 ]
 

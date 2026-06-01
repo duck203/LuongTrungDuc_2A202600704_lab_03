@@ -27,18 +27,124 @@ RED_FLAG_KEYWORDS = {
     "không tỉnh táo",
 }
 
+VINMEC_FACILITIES = {
+    "hanoi": {
+        "name": "Vinmec Times City",
+        "city": "Hà Nội",
+        "address": "458 Minh Khai, Vĩnh Tuy, Hà Nội",
+        "hotline": "024 3974 3556",
+    },
+    "ha noi": {
+        "name": "Vinmec Times City",
+        "city": "Hà Nội",
+        "address": "458 Minh Khai, Vĩnh Tuy, Hà Nội",
+        "hotline": "024 3974 3556",
+    },
+    "hà nội": {
+        "name": "Vinmec Times City",
+        "city": "Hà Nội",
+        "address": "458 Minh Khai, Vĩnh Tuy, Hà Nội",
+        "hotline": "024 3974 3556",
+    },
+    "ho chi minh": {
+        "name": "Vinmec Central Park",
+        "city": "TP. Hồ Chí Minh",
+        "address": "720A Điện Biên Phủ, TP. Hồ Chí Minh",
+        "hotline": "028 3622 1166",
+    },
+    "hồ chí minh": {
+        "name": "Vinmec Central Park",
+        "city": "TP. Hồ Chí Minh",
+        "address": "720A Điện Biên Phủ, TP. Hồ Chí Minh",
+        "hotline": "028 3622 1166",
+    },
+    "da nang": {
+        "name": "Vinmec Đà Nẵng",
+        "city": "Đà Nẵng",
+        "address": "Đà Nẵng",
+        "hotline": "023 6371 1111",
+    },
+    "đà nẵng": {
+        "name": "Vinmec Đà Nẵng",
+        "city": "Đà Nẵng",
+        "address": "Đà Nẵng",
+        "hotline": "023 6371 1111",
+    },
+    "nha trang": {
+        "name": "Vinmec Nha Trang",
+        "city": "Nha Trang",
+        "address": "Nha Trang",
+        "hotline": "025 8390 0168",
+    },
+    "hai phong": {
+        "name": "Vinmec Hải Phòng",
+        "city": "Hải Phòng",
+        "address": "Hải Phòng",
+        "hotline": "022 5730 9888",
+    },
+    "hải phòng": {
+        "name": "Vinmec Hải Phòng",
+        "city": "Hải Phòng",
+        "address": "Hải Phòng",
+        "hotline": "022 5730 9888",
+    },
+    "ha long": {
+        "name": "Vinmec Hạ Long",
+        "city": "Hạ Long",
+        "address": "Hạ Long",
+        "hotline": "020 3382 8188",
+    },
+    "hạ long": {
+        "name": "Vinmec Hạ Long",
+        "city": "Hạ Long",
+        "address": "Hạ Long",
+        "hotline": "020 3382 8188",
+    },
+    "phu quoc": {
+        "name": "Vinmec Phú Quốc",
+        "city": "Phú Quốc",
+        "address": "Phú Quốc",
+        "hotline": "029 7398 5588",
+    },
+    "phú quốc": {
+        "name": "Vinmec Phú Quốc",
+        "city": "Phú Quốc",
+        "address": "Phú Quốc",
+        "hotline": "029 7398 5588",
+    },
+    "can tho": {
+        "name": "Vinmec Cần Thơ",
+        "city": "Cần Thơ",
+        "address": "Cần Thơ",
+        "hotline": "029 2368 3003",
+    },
+    "cần thơ": {
+        "name": "Vinmec Cần Thơ",
+        "city": "Cần Thơ",
+        "address": "Cần Thơ",
+        "hotline": "029 2368 3003",
+    },
+}
+
+DEFAULT_VINMEC_FACILITY = {
+    "name": "Vinmec nearest facility",
+    "city": "khu vực gần bạn",
+    "address": "Vui lòng kiểm tra cơ sở Vinmec gần nhất trên vinmec.com",
+    "hotline": "024 3975 6789",
+}
+
 SERVICE_DIRECTORY = {
     "emergency": {
-        "service": "Emergency department",
-        "message": "Call local emergency services or go to the nearest emergency department now.",
+        "service": "Khoa Cấp cứu / Emergency department",
+        "message": "Gọi cấp cứu địa phương hoặc đến khoa cấp cứu gần nhất ngay.",
     },
     "urgent": {
-        "service": "Urgent care clinic",
-        "message": "Seek same-day medical care, especially if symptoms are worsening.",
+        "service": "Khám khẩn trong ngày / Same-day urgent visit",
+        "message": "Nên đặt lịch khám trong ngày, đặc biệt nếu triệu chứng tăng lên.",
     },
     "routine": {
-        "service": "Primary care clinic",
-        "message": "Book a non-emergency appointment with a primary care clinician.",
+        "service": "Khám chuyên khoa hoặc phòng khám đa khoa",
+        "message": "Có thể đặt lịch khám không khẩn cấp tại cơ sở Vinmec phù hợp.",
     },
 }
 
@@ -79,9 +185,13 @@ def assess_symptom_urgency(symptoms: str, age: int = 0, duration_hours: float = 
 def recommend_care_service(urgency: str, location: str = "local area") -> str:
     level = _normalize_urgency(urgency)
     service = SERVICE_DIRECTORY[level]
+    facility = _find_vinmec_facility(location)
     return (
-        f"Recommended service for {location}: {service['service']}. "
-        f"{service['message']}"
+        f"Vinmec navigation for {location}: {service['service']}. "
+        f"Suggested facility: {facility['name']} ({facility['city']}). "
+        f"Address: {facility['address']}. Hotline: {facility['hotline']}. "
+        f"{service['message']} "
+        "This is an educational routing suggestion, not an official Vinmec booking confirmation."
     )
 
 
@@ -98,8 +208,8 @@ def estimate_visit_cost(service_type: str, insurance_status: str = "unknown") ->
         estimated_patient_cost = base_cost * 0.7
 
     return (
-        f"Estimated patient cost for {level} care: {estimated_patient_cost:,.0f} VND. "
-        "This is a planning estimate, not a hospital quote."
+        f"Estimated Vinmec-style patient cost for {level} care: {estimated_patient_cost:,.0f} VND. "
+        "This is a lab planning estimate, not an official Vinmec service fee or hospital quote."
     )
 
 
@@ -107,12 +217,12 @@ def appointment_preparation(service_type: str) -> str:
     level = _normalize_urgency(service_type)
     if level == "emergency":
         return (
-            "Preparation: do not delay care. Bring ID, insurance card if available, "
+            "Vinmec visit preparation: do not delay care. Bring ID, insurance card if available, "
             "current medication list, allergy list, and recent medical records if easy to access."
         )
 
     return (
-        "Preparation: bring ID, insurance card, current medication list, allergy list, "
+        "Vinmec visit preparation: bring ID, insurance card, current medication list, allergy list, "
         "symptom timeline, and questions for the clinician."
     )
 
@@ -131,7 +241,7 @@ def get_tools() -> List[Dict[str, object]]:
         {
             "name": "recommend_care_service",
             "description": "Recommend an appropriate care service from an urgency level and location.",
-            "args_schema": 'recommend_care_service(urgency="emergency", location="Hanoi")',
+            "args_schema": 'recommend_care_service(urgency="emergency", location="Hà Nội")',
             "func": recommend_care_service,
         },
         {
@@ -156,3 +266,11 @@ def _normalize_urgency(value: str) -> str:
     if "urgent" in text or "same-day" in text:
         return "urgent"
     return "routine"
+
+
+def _find_vinmec_facility(location: str) -> Dict[str, str]:
+    text = location.strip().lower()
+    for key, facility in VINMEC_FACILITIES.items():
+        if key in text:
+            return facility
+    return DEFAULT_VINMEC_FACILITY

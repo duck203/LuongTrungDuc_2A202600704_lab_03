@@ -1,12 +1,12 @@
 [
   {
     "case": "Emergency red flags",
-    "question": "A 62-year-old patient in Hanoi has chest pain and shortness of breath for 2 hours. What level of care is appropriate?",
+    "question": "A 62-year-old patient in H\u00e0 N\u1ed9i has chest pain and shortness of breath for 2 hours. What Vinmec care level is appropriate?",
     "chatbot_answer": "It may be anxiety or indigestion. Consider resting and monitoring symptoms.",
-    "agent_v1_answer": "Emergency department is appropriate. Call local emergency services or go now. This is not a diagnosis.",
+    "agent_v1_answer": "Vinmec Times City emergency department is appropriate. Call local emergency services or go now. This is not a diagnosis.",
     "agent_v1_steps": 3,
     "agent_v1_success": true,
-    "agent_v2_answer": "Emergency department is appropriate. Call local emergency services or go now. This is not a diagnosis.",
+    "agent_v2_answer": "Vinmec Times City emergency department is appropriate. Call local emergency services or go now. This is not a diagnosis.",
     "agent_v2_steps": 3,
     "agent_v2_success": true
   },
@@ -14,10 +14,10 @@
     "case": "Routine symptoms",
     "question": "A 30-year-old has mild cough for 24 hours and no breathing difficulty. What should they do?",
     "chatbot_answer": "You probably have a cold and can ignore it.",
-    "agent_v1_answer": "Routine care is reasonable if symptoms persist. Prepare medication list, allergy list, symptom timeline, and questions. This is not a diagnosis.",
+    "agent_v1_answer": "Routine Vinmec care is reasonable if symptoms persist. Prepare medication list, allergy list, symptom timeline, and questions. This is not a diagnosis.",
     "agent_v1_steps": 3,
     "agent_v1_success": true,
-    "agent_v2_answer": "Routine care is reasonable if symptoms persist. Prepare medication list, allergy list, symptom timeline, and questions. This is not a diagnosis.",
+    "agent_v2_answer": "Routine Vinmec care is reasonable if symptoms persist. Prepare medication list, allergy list, symptom timeline, and questions. This is not a diagnosis.",
     "agent_v2_steps": 3,
     "agent_v2_success": true
   },
@@ -28,7 +28,7 @@
     "agent_v1_answer": "Agent v1 failed: unknown tool 'diagnose_patient'.",
     "agent_v1_steps": 1,
     "agent_v1_success": false,
-    "agent_v2_answer": "Estimated insured urgent care cost is 180,000 VND. This is a planning estimate, not a hospital quote.",
+    "agent_v2_answer": "Estimated insured Vinmec-style urgent care cost is 180,000 VND. This is a planning estimate, not an official Vinmec service fee.",
     "agent_v2_steps": 3,
     "agent_v2_success": true
   }

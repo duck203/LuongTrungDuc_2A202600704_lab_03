@@ -51,17 +51,21 @@ class DemoProvider(LLMProvider):
                 "Thought: I should first assess whether the symptoms contain emergency red flags.\n"
                 f"Action: assess_symptom_urgency(symptoms={quoted_question}, age=0, duration_hours=0)"
             )
-        elif "urgency: emergency" in prompt_lower and "recommended service" not in prompt_lower:
+        elif (
+            "urgency: emergency" in prompt_lower
+            and "recommended service" not in prompt_lower
+            and "vinmec navigation" not in prompt_lower
+        ):
             content = (
                 "Thought: The urgency is emergency, so I should recommend the right care service.\n"
-                'Action: recommend_care_service(urgency="emergency", location="Hanoi")'
+                'Action: recommend_care_service(urgency="emergency", location="Hà Nội")'
             )
         elif "urgency: routine" in prompt_lower and "preparation:" not in prompt_lower:
             content = (
                 "Thought: No emergency red flag was detected, so I should give routine preparation guidance.\n"
                 'Action: appointment_preparation(service_type="routine")'
             )
-        elif "recommended service" in prompt_lower:
+        elif "recommended service" in prompt_lower or "vinmec navigation" in prompt_lower:
             latest_observation = prompt.split("Observation:")[-1].strip()
             content = (
                 "Thought: I have the triage and service recommendation.\n"

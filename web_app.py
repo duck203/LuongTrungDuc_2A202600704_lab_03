@@ -3,7 +3,7 @@ import json
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from socket import socket
-from typing import Any, Dict, Tuple
+from typing import Any, Dict
 
 from run_agent import DemoProvider, build_provider, load_dotenv
 from src.agent.agent import ReActAgent
@@ -20,242 +20,396 @@ HTML = r"""<!doctype html>
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Lab 3 Agent Console</title>
+  <title>Vinmec Agent Chat</title>
   <style>
     :root {
-      color-scheme: light;
-      --bg: #f7f8fb;
+      --app-bg: #f4f6f8;
+      --sidebar: #f8fafc;
       --panel: #ffffff;
-      --ink: #20242c;
+      --text: #1f2937;
       --muted: #667085;
-      --line: #d9dee8;
-      --accent: #176b5b;
-      --accent-strong: #0f4f43;
+      --line: #d0d7e2;
+      --user: #1f6f5b;
+      --assistant: #ffffff;
+      --chip: #eef3f1;
       --danger: #b42318;
-      --code: #111827;
-      --code-bg: #eef2f6;
+      --shadow: 0 10px 32px rgba(15, 23, 42, 0.08);
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      min-height: 100vh;
-      background: var(--bg);
-      color: var(--ink);
+      height: 100vh;
+      overflow: hidden;
+      background: var(--app-bg);
+      color: var(--text);
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    .shell {
+    .app {
       display: grid;
-      grid-template-columns: 320px minmax(0, 1fr);
-      min-height: 100vh;
-    }
-
-    aside {
-      border-right: 1px solid var(--line);
-      background: #f1f4f8;
-      padding: 22px;
-    }
-
-    main {
-      padding: 24px;
-      display: grid;
-      grid-template-rows: auto minmax(0, 1fr);
-      gap: 18px;
-    }
-
-    h1 {
-      margin: 0 0 4px;
-      font-size: 22px;
-      line-height: 1.2;
-      letter-spacing: 0;
-    }
-
-    h2 {
-      margin: 0 0 10px;
-      font-size: 15px;
-      letter-spacing: 0;
-    }
-
-    .muted {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .field {
-      display: grid;
-      gap: 7px;
-      margin-top: 18px;
-    }
-
-    label {
-      color: #344054;
-      font-weight: 650;
-      font-size: 13px;
-    }
-
-    select,
-    textarea,
-    input {
-      width: 100%;
-      border: 1px solid var(--line);
-      background: var(--panel);
-      color: var(--ink);
-      border-radius: 7px;
-      padding: 10px 11px;
-      font: inherit;
-      min-height: 42px;
-    }
-
-    textarea {
-      min-height: 128px;
-      resize: vertical;
-      line-height: 1.45;
-    }
-
-    button {
-      width: 100%;
-      border: 0;
-      border-radius: 7px;
-      background: var(--accent);
-      color: white;
-      min-height: 44px;
-      font-weight: 750;
-      cursor: pointer;
-      margin-top: 18px;
-    }
-
-    button:hover { background: var(--accent-strong); }
-    button:disabled { opacity: 0.65; cursor: progress; }
-
-    .quick {
-      display: grid;
-      gap: 8px;
-      margin-top: 18px;
-    }
-
-    .quick button {
-      margin: 0;
-      background: #ffffff;
-      color: #1d2939;
-      border: 1px solid var(--line);
-      text-align: left;
-      padding: 9px 10px;
-      min-height: 38px;
-      font-weight: 600;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 16px;
-    }
-
-    .status {
-      min-width: 180px;
-      text-align: right;
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 360px;
-      gap: 18px;
+      grid-template-columns: 280px minmax(0, 1fr) 340px;
+      height: 100vh;
       min-height: 0;
     }
 
-    section {
-      background: var(--panel);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      padding: 18px;
+    .sidebar {
+      background: var(--sidebar);
+      border-right: 1px solid var(--line);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
       min-width: 0;
     }
 
-    .answer {
-      min-height: 180px;
-      white-space: pre-wrap;
-      line-height: 1.55;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 2px 10px;
+    }
+
+    .mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: var(--user);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+
+    h1 {
+      margin: 0;
       font-size: 16px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.4;
+      margin-top: 2px;
+    }
+
+    .control {
+      display: grid;
+      gap: 6px;
+    }
+
+    .new-chat {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: white;
+      color: #344054;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      text-align: left;
+      padding: 0 10px;
+    }
+
+    .new-chat:hover { background: #f1f5f9; }
+
+    label {
+      color: #344054;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    select,
+    input {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0 10px;
+      background: white;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .examples {
+      display: grid;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .example {
+      border: 1px solid var(--line);
+      background: white;
+      color: #344054;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: left;
+      cursor: pointer;
+      font: inherit;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .example:hover { background: #f1f5f9; }
+
+    .sidebar-note {
+      margin-top: auto;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    .chat {
+      display: grid;
+      grid-template-rows: 58px minmax(0, 1fr) auto;
+      min-width: 0;
+      min-height: 0;
+      background: #ffffff;
+    }
+
+    .chat-header {
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 22px;
+      gap: 14px;
+    }
+
+    .chat-title {
+      font-weight: 750;
+      font-size: 15px;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .messages {
+      overflow-y: auto;
+      padding: 28px 22px;
+      scroll-behavior: smooth;
+      min-height: 0;
+      overscroll-behavior: contain;
+    }
+
+    .message {
+      max-width: 820px;
+      margin: 0 auto 20px;
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 12px;
+      align-items: start;
+    }
+
+    .avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 13px;
+      background: #e8eef5;
+      color: #344054;
+    }
+
+    .message.user .avatar {
+      background: var(--user);
+      color: white;
+    }
+
+    .bubble {
+      background: var(--assistant);
+      border: 1px solid transparent;
+      border-radius: 10px;
+      padding: 7px 0;
+      white-space: pre-wrap;
+      line-height: 1.58;
+      font-size: 15px;
+    }
+
+    .message.user .bubble {
+      justify-self: start;
+      background: var(--chip);
+      border-color: #dbe7e2;
+      padding: 10px 12px;
+      max-width: 680px;
+    }
+
+    .message.error .bubble {
+      color: var(--danger);
+      font-weight: 650;
+    }
+
+    .composer-wrap {
+      border-top: 1px solid var(--line);
+      padding: 14px 22px 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.78), white 24%);
+    }
+
+    .composer {
+      max-width: 820px;
+      margin: 0 auto;
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 10px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 44px;
+      gap: 8px;
+      align-items: end;
+    }
+
+    textarea {
+      border: 0;
+      outline: 0;
+      resize: none;
+      min-height: 44px;
+      max-height: 160px;
+      padding: 11px 8px;
+      color: var(--text);
+      font: inherit;
+      line-height: 1.45;
+    }
+
+    .send {
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--user);
+      color: white;
+      cursor: pointer;
+      font-size: 20px;
+      line-height: 1;
+    }
+
+    .send:disabled {
+      opacity: 0.6;
+      cursor: progress;
+    }
+
+    .hint {
+      max-width: 820px;
+      margin: 9px auto 0;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .trace-panel {
+      background: #fbfcfe;
+      border-left: 1px solid var(--line);
+      display: grid;
+      grid-template-rows: 58px auto minmax(0, 1fr);
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .trace-head {
+      border-bottom: 1px solid var(--line);
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .trace-title {
+      font-size: 14px;
+      font-weight: 750;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 12px 16px 0;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: white;
+      color: #344054;
+      font-size: 11px;
     }
 
     .trace {
-      display: grid;
-      gap: 10px;
-      max-height: calc(100vh - 180px);
       overflow: auto;
-      padding-right: 2px;
+      padding: 12px 16px 16px;
+      display: grid;
+      align-content: start;
+      gap: 10px;
+      min-height: 0;
+      overscroll-behavior: contain;
     }
 
-    .trace-item {
+    .trace-card {
       border: 1px solid var(--line);
-      border-radius: 7px;
+      background: white;
+      border-radius: 8px;
       padding: 10px;
-      background: #fbfcfe;
     }
 
     .trace-role {
-      font-size: 12px;
       color: var(--muted);
-      font-weight: 750;
-      margin-bottom: 6px;
+      font-size: 11px;
+      font-weight: 800;
       text-transform: uppercase;
+      margin-bottom: 7px;
     }
 
     pre {
       margin: 0;
       white-space: pre-wrap;
       word-break: break-word;
-      color: var(--code);
-      background: var(--code-bg);
-      border-radius: 6px;
-      padding: 10px;
-      font-size: 12px;
-      line-height: 1.45;
+      font: 12px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: #111827;
     }
 
-    .error {
-      color: var(--danger);
-      font-weight: 650;
+    @media (max-width: 1050px) {
+      .app { grid-template-columns: 250px minmax(0, 1fr); }
+      .trace-panel { display: none; }
     }
 
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .pill {
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      padding: 5px 9px;
-      color: #344054;
-      background: #fbfcfe;
-      font-size: 12px;
-    }
-
-    @media (max-width: 900px) {
-      .shell { grid-template-columns: 1fr; }
-      aside { border-right: 0; border-bottom: 1px solid var(--line); }
-      .workspace { grid-template-columns: 1fr; }
-      .topbar { display: block; }
-      .status { text-align: left; margin-top: 8px; }
-      .trace { max-height: none; }
+    @media (max-width: 760px) {
+      body { overflow: auto; }
+      .app { display: block; height: auto; min-height: 100vh; }
+      .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }
+      .chat { min-height: 72vh; }
+      .messages { padding: 20px 14px; max-height: 58vh; }
+      .composer-wrap { padding: 12px 14px 16px; }
+      .message { grid-template-columns: 30px minmax(0, 1fr); }
+      .avatar { width: 30px; height: 30px; }
     }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <aside>
-      <h1>Lab 3 Agent Console</h1>
-      <div class="muted">Chạy chatbot baseline, Agent v1 hoặc Agent v2 qua cùng một giao diện.</div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">V</div>
+        <div>
+          <h1>Vinmec Agent Chat</h1>
+          <div class="sub">Lab 3 Chatbot vs ReAct Agent</div>
+        </div>
+      </div>
 
-      <div class="field">
+      <button id="newChatBtn" class="new-chat" type="button">+ New chat</button>
+
+      <div class="control">
         <label for="mode">Chế độ</label>
         <select id="mode">
           <option value="agent-v2">Agent v2 improved</option>
@@ -264,7 +418,7 @@ HTML = r"""<!doctype html>
         </select>
       </div>
 
-      <div class="field">
+      <div class="control">
         <label for="provider">Provider</label>
         <select id="provider">
           <option value="demo">Demo offline</option>
@@ -272,61 +426,69 @@ HTML = r"""<!doctype html>
         </select>
       </div>
 
-      <div class="field">
+      <div class="control">
         <label for="maxSteps">Max steps</label>
         <input id="maxSteps" type="number" min="1" max="10" value="5" />
       </div>
 
-      <div class="field">
-        <label for="question">Câu hỏi</label>
-        <textarea id="question"></textarea>
+      <div class="examples">
+        <button class="example" type="button" data-question="Tôi đang bị đầu óc không tỉnh táo">Tôi đang bị đầu óc không tỉnh táo</button>
+        <button class="example" type="button" data-question="Tôi bị đau ngực và khó thở 2 tiếng, tôi nên đi khám ở đâu?">Tôi bị đau ngực và khó thở 2 tiếng</button>
+        <button class="example" type="button" data-question="Tôi bị ho nhẹ 1 ngày, không khó thở">Tôi bị ho nhẹ 1 ngày, không khó thở</button>
       </div>
 
-      <button id="sendBtn" type="button">Run</button>
-
-      <div class="quick">
-        <button type="button" data-question="Tôi đang bị đầu óc không tỉnh táo">Không tỉnh táo</button>
-        <button type="button" data-question="Tôi bị đau ngực và khó thở 2 tiếng, tôi nên đi khám ở đâu?">Đau ngực khó thở</button>
-        <button type="button" data-question="Tôi bị ho nhẹ 1 ngày, không khó thở">Ho nhẹ</button>
+      <div class="sidebar-note">
+        Dữ liệu Vinmec trong bài là dữ liệu mô phỏng học thuật, không phải hệ thống đặt lịch chính thức.
       </div>
     </aside>
 
-    <main>
-      <div class="topbar">
+    <main class="chat">
+      <div class="chat-header">
         <div>
-          <h2>Answer</h2>
-          <div class="muted">Kết quả cuối cùng nằm trong khung answer; trace nằm bên phải.</div>
+          <div class="chat-title">Cuộc trò chuyện</div>
+          <div class="sub">Chọn mode ở sidebar rồi nhập câu hỏi.</div>
         </div>
         <div id="status" class="status">Ready</div>
       </div>
 
-      <div class="workspace">
-        <section>
-          <div id="answer" class="answer muted">Nhập câu hỏi rồi bấm Run.</div>
-          <div id="meta" class="meta"></div>
-        </section>
+      <div id="messages" class="messages"></div>
 
-        <section>
-          <h2>Trace</h2>
-          <div id="trace" class="trace">
-            <div class="muted">Trace sẽ hiển thị Thought, Action và Observation sau khi chạy.</div>
-          </div>
-        </section>
+      <div class="composer-wrap">
+        <div class="composer">
+          <textarea id="question" rows="1" placeholder="Nhập câu hỏi cho agent..."></textarea>
+          <button id="sendBtn" class="send" type="button" aria-label="Send">↑</button>
+        </div>
+        <div class="hint">Enter để gửi, Shift + Enter để xuống dòng.</div>
       </div>
     </main>
+
+    <aside class="trace-panel">
+      <div class="trace-head">
+        <div class="trace-title">Trace</div>
+        <div id="traceStatus" class="sub">No run</div>
+      </div>
+      <div id="meta" class="meta"></div>
+      <div id="trace" class="trace">
+        <div class="sub">Thought, Action và Observation sẽ xuất hiện ở đây.</div>
+      </div>
+    </aside>
   </div>
 
   <script>
+    const messagesEl = document.querySelector("#messages");
     const questionEl = document.querySelector("#question");
     const modeEl = document.querySelector("#mode");
     const providerEl = document.querySelector("#provider");
     const maxStepsEl = document.querySelector("#maxSteps");
     const sendBtn = document.querySelector("#sendBtn");
-    const answerEl = document.querySelector("#answer");
-    const traceEl = document.querySelector("#trace");
+    const newChatBtn = document.querySelector("#newChatBtn");
     const statusEl = document.querySelector("#status");
+    const traceStatusEl = document.querySelector("#traceStatus");
+    const traceEl = document.querySelector("#trace");
     const metaEl = document.querySelector("#meta");
+    const conversation = [];
 
+    resetChat();
     questionEl.value = "Tôi đang bị đầu óc không tỉnh táo";
 
     document.querySelectorAll("[data-question]").forEach((button) => {
@@ -336,19 +498,33 @@ HTML = r"""<!doctype html>
       });
     });
 
-    sendBtn.addEventListener("click", async () => {
-      const question = questionEl.value.trim();
-      if (!question) {
-        answerEl.textContent = "Vui lòng nhập câu hỏi.";
-        answerEl.className = "answer error";
-        return;
+    questionEl.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        send();
       }
+    });
 
+    questionEl.addEventListener("input", () => {
+      questionEl.style.height = "auto";
+      questionEl.style.height = Math.min(questionEl.scrollHeight, 160) + "px";
+    });
+
+    sendBtn.addEventListener("click", send);
+    newChatBtn.addEventListener("click", resetChat);
+
+    async function send() {
+      const question = questionEl.value.trim();
+      if (!question || sendBtn.disabled) return;
+
+      addMessage("user", question);
+      conversation.push({ role: "user", content: question });
+      questionEl.value = "";
+      questionEl.style.height = "auto";
       sendBtn.disabled = true;
       statusEl.textContent = "Running...";
-      answerEl.textContent = "";
-      answerEl.className = "answer muted";
-      traceEl.innerHTML = "<div class='muted'>Đang chạy agent...</div>";
+      traceStatusEl.textContent = "Running";
+      traceEl.innerHTML = "<div class='sub'>Đang chạy agent...</div>";
       metaEl.innerHTML = "";
 
       try {
@@ -360,6 +536,7 @@ HTML = r"""<!doctype html>
             mode: modeEl.value,
             provider: providerEl.value,
             max_steps: Number(maxStepsEl.value || 5),
+            history: conversation.slice(-10),
           }),
         });
         const data = await response.json();
@@ -368,20 +545,59 @@ HTML = r"""<!doctype html>
         renderResult({ ok: false, error: String(error), trace: [] });
       } finally {
         sendBtn.disabled = false;
+        questionEl.focus();
       }
-    });
+    }
 
     function renderResult(data) {
       statusEl.textContent = data.ok ? "Completed" : "Error";
-      answerEl.className = data.ok ? "answer" : "answer error";
-      answerEl.textContent = data.ok ? data.answer : data.error;
+      traceStatusEl.textContent = data.ok ? "Completed" : "Error";
+      const reply = data.ok ? data.answer : data.error;
+      addMessage(data.ok ? "assistant" : "assistant error", reply);
+      conversation.push({ role: "assistant", content: reply });
+      renderMeta(data);
+      renderTrace(data.trace);
+    }
 
+    function addMessage(role, content) {
+      const message = document.createElement("div");
+      message.className = `message ${role}`;
+
+      const avatar = document.createElement("div");
+      avatar.className = "avatar";
+      avatar.textContent = role.startsWith("user") ? "U" : "A";
+
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.textContent = content;
+
+      message.appendChild(avatar);
+      message.appendChild(bubble);
+      messagesEl.appendChild(message);
+      requestAnimationFrame(() => {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      });
+    }
+
+    function resetChat() {
+      conversation.length = 0;
+      messagesEl.innerHTML = "";
+      addMessage("assistant", "Xin chào. Tôi là giao diện Lab 3 theo phong cách chat. Bạn có thể hỏi liên tục về điều hướng khám Vinmec hoặc so sánh Chatbot, Agent v1, Agent v2.");
+      statusEl.textContent = "Ready";
+      traceStatusEl.textContent = "No run";
+      traceEl.innerHTML = "<div class='sub'>Thought, Action và Observation sẽ xuất hiện ở đây.</div>";
+      metaEl.innerHTML = "";
+      questionEl.focus();
+    }
+
+    function renderMeta(data) {
       metaEl.innerHTML = "";
       [
         ["mode", data.mode],
         ["provider", data.provider],
         ["model", data.model],
         ["steps", data.steps],
+        ["turns", data.turns],
       ].forEach(([key, value]) => {
         if (value === undefined || value === null || value === "") return;
         const pill = document.createElement("span");
@@ -389,17 +605,19 @@ HTML = r"""<!doctype html>
         pill.textContent = `${key}: ${value}`;
         metaEl.appendChild(pill);
       });
+    }
 
-      const trace = Array.isArray(data.trace) ? data.trace : [];
-      if (!trace.length) {
-        traceEl.innerHTML = "<div class='muted'>Không có trace cho lượt này.</div>";
+    function renderTrace(trace) {
+      const items = Array.isArray(trace) ? trace : [];
+      if (!items.length) {
+        traceEl.innerHTML = "<div class='sub'>Không có ReAct trace cho lượt này. Chatbot baseline trả lời trực tiếp nên không có Thought/Action/Observation.</div>";
         return;
       }
 
       traceEl.innerHTML = "";
-      trace.forEach((item, index) => {
-        const box = document.createElement("div");
-        box.className = "trace-item";
+      items.forEach((item, index) => {
+        const card = document.createElement("div");
+        card.className = "trace-card";
 
         const role = document.createElement("div");
         role.className = "trace-role";
@@ -408,9 +626,12 @@ HTML = r"""<!doctype html>
         const pre = document.createElement("pre");
         pre.textContent = item.content || "";
 
-        box.appendChild(role);
-        box.appendChild(pre);
-        traceEl.appendChild(box);
+        card.appendChild(role);
+        card.appendChild(pre);
+        traceEl.appendChild(card);
+      });
+      requestAnimationFrame(() => {
+        traceEl.scrollTop = traceEl.scrollHeight;
       });
     }
   </script>
@@ -472,6 +693,7 @@ def run_chat(payload: Dict[str, Any]) -> Dict[str, Any]:
     mode = str(payload.get("mode") or "agent-v2").strip()
     provider_choice = str(payload.get("provider") or "demo").strip()
     max_steps = int(payload.get("max_steps") or 5)
+    history = payload.get("history") or []
 
     llm = DemoProvider() if provider_choice == "demo" else build_provider()
 
@@ -504,6 +726,7 @@ def run_chat(payload: Dict[str, Any]) -> Dict[str, Any]:
         "provider": "demo" if provider_choice == "demo" else os.getenv("DEFAULT_PROVIDER", "env"),
         "model": getattr(llm, "model_name", "unknown"),
         "steps": getattr(llm, "calls", None),
+        "turns": len(history),
     }
 
 

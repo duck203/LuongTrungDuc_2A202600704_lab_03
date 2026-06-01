@@ -74,7 +74,7 @@ def test_react_agent_parses_json_action():
     answer = agent.run("Estimate urgent care cost with insurance.")
 
     assert "180,000 VND" in answer
-    assert any("Estimated patient cost" in entry["content"] for entry in agent.history)
+    assert any("Estimated Vinmec-style patient cost" in entry["content"] for entry in agent.history)
 
 
 def test_baseline_chatbot_returns_direct_answer():
